@@ -7,7 +7,8 @@ from usda_api import get_esr_exports
 from esr_views import (
     build_last_week,
     treemap_net_sales,
-    commitments_hbar
+    commitments_hbar,
+    commitments_table
 )
 from esr_views import seasonal_commitments_plot
 
@@ -70,19 +71,30 @@ week_ending = last_week["weekEndingDate"].iloc[0]
 # ---------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------
-col1, col2, col3 = st.columns([1, 1, 1])
+plot1_1, plot1_2 = st.columns([1, 1])
 
-with col1:
+with plot1_1:
     st.plotly_chart(
         treemap_net_sales(last_week, week_ending),
         use_container_width=True,
     )
 
-with col2:
-    st.subheader("Commitments")
-    st.pyplot(commitments_hbar(last_week))
-
-with col3:
-    st.subheader("Seasonal")
+with plot1_2:
+    st.subheader("Cumulative Commitments: CMY vs 5 previous years")
     st.pyplot(seasonal_commitments_plot(df))
 
+
+plot2_1, plot2_2 = st.columns([1, 1])
+
+with plot2_1:
+    st.subheader("Commitments by Destination")
+    st.pyplot(commitments_hbar(last_week))
+
+with plot2_2:
+    st.subheader(" ")
+    st.dataframe(
+        commitments_table(last_week),
+        use_container_width=True,
+        height=375,
+        hide_index=True
+    )

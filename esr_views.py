@@ -96,7 +96,7 @@ def treemap_net_sales(last_week: pd.DataFrame, week_ending) :
 
     fig.update_traces(texttemplate="%{label}<br>%{value:,.0f}")
     fig.update_coloraxes(showscale=False)
-    fig.update_layout(height=700)
+    fig.update_layout(height=525)
 
     return fig
 
@@ -122,7 +122,7 @@ def commitments_hbar(last_week):
 
     ax.legend((p1[0], p2[0]), ("Shipments", "Outstanding"))
     ax.set_xlabel("Thousands of Bales")
-    ax.set_title("US Cotton Commitments per Destination")
+    #ax.set_title("US Cotton Commitments per Destination")
     ax.xaxis.set_major_formatter(mtick.FuncFormatter(lambda x, _: f"{x:,.0f}"))
 
     return fig
@@ -184,7 +184,7 @@ def seasonal_commitments_plot(df_totals):
     ax.set_xlim(0.5, 50)
     #ax.set_ylim(0, 20_000_000)
 
-    ax.set_title("US Cotton Commitments: Last 5 Years", fontsize=15, fontweight="bold")
+    #ax.set_title("Cumulative Commitments: CMY vs 5 previous years", fontsize=15, fontweight="bold")
     ax.set_ylabel("Thousand Bales")
     ax.legend()
 
@@ -193,3 +193,30 @@ def seasonal_commitments_plot(df_totals):
     )
 
     return fig
+
+def commitments_table(last_week: pd.DataFrame) -> pd.DataFrame:
+    df = (
+        last_week[[
+            "countryDescription",
+            "accumulatedExports",
+            "outstandingSales",
+            "currentMYTotalCommitment",
+        ]]
+        .dropna(subset=["countryDescription"])
+        .sort_values("currentMYTotalCommitment", ascending=False)
+    )
+
+    df[[
+        "accumulatedExports",
+        "outstandingSales",
+        "currentMYTotalCommitment",
+    ]] /= 1_000  # thousands of bales
+
+    df = df.rename(columns={
+        "countryDescription": "Country",
+        "accumulatedExports": "Shipments",
+        "outstandingSales": "Outstanding",
+        "currentMYTotalCommitment": "Total Commitments",
+    })
+
+    return df
