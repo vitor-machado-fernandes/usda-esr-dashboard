@@ -71,6 +71,29 @@ week_ending = last_week["weekEndingDate"].iloc[0]
 # ---------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------
+st.write("""
+**Fundamental Analysis: Commodity Exports**
+
+We have previously established that prices are inversely related to the availability of stocks (or better, stocks/use).
+After all, the more of a commodity is stored in a bin/tank/warehouse somewhere, the less likely it is for consumers to panic-buy, and send prices soaring.
+
+We have also seen that, per the WASDE balance sheet, exports are a key component of demand. Luckily, every Thursday at 7:30am CT, the USDA releases the Export Sales Report (ESR).
+This report allows the public to monitor the pace in which American companies are selling, and shipping, commodity to different foreign nations.
+
+
+**How it works**
+The USDA requires physical traders to report sales and shipments weekly.
+- New sales → Outstanding Sales  
+- Shipments → Accumulated Exports  
+- Outstanding + Accumulated = Total Commitments  
+
+Moreover, large daily sales (≥100k MT) trigger a next-day *Flash Sales* report.
+
+The below treemap shows weekly sales by destination.
+The seasonal chart compares the current MY to the previous five.
+""")
+
+
 plot1_1, plot1_2 = st.columns([1, 1])
 
 with plot1_1:
@@ -83,6 +106,13 @@ with plot1_2:
     st.subheader("Cumulative Commitments: CMY vs 5 previous years")
     st.pyplot(seasonal_commitments_plot(df))
 
+
+st.write("""
+The chart and table below combine destination and total commitments.
+You can better visualize which destinations are the most relevant - and maybe as importantly which ones are missing.
+
+Try changing the *week ending* date to see how market dynamics shift over time.
+""")
 
 plot2_1, plot2_2 = st.columns([1, 1])
 
@@ -98,3 +128,56 @@ with plot2_2:
         height=375,
         hide_index=True
     )
+
+st.write("""
+Last but not least, it is helpful to know how much commodity need to be sold per week, on average, for sales to reach the WASDE's export number.
+Although not an apples to apples comparison (sales >= exports), it is helpful in checking if the WASDE number is feasible.
+If recent weekly sales > such average, the USDA might choose to raise exports, and lower ending stocks.
+You should also keep an eye on the pace of exports. If shipments are too slow, ending stocks will be higher than initially expected. And so forth.
+""")
+
+from usda_api import get_wasde_export
+
+wasde_year = datetime.today().year
+wasde_export = get_wasde_export(API_KEY, wasde_year)
+
+
+from datetime import datetime
+
+def weeks_left_cmy(latest_week_date: datetime) -> int:
+    end_year = (
+        datetime.today().year
+        if datetime.today().month < 8
+        else datetime.today().year + 1
+    )
+
+    end = datetime(end_year, 7, 31)
+    delta = end - latest_week_date
+
+    return max(int(delta.days / 7), 0)
+
+latest_week_date = last_week["weekEndingDate"].iloc[0]
+weeks_left_CMY = weeks_left_cmy(latest_week_date)
+
+commitments = float(last_week["currentMYTotalCommitment"].sum())
+
+need_to_sell = wasde_export - commitments
+avg_weekly = need_to_sell / weeks_left_CMY if weeks_left_CMY > 0 else 0
+
+fwd_sales_df = pd.DataFrame([{
+        "CMY Commitments": commitments,
+    "WASDE Exports": wasde_export,
+    "Weeks Left CMY": weeks_left_CMY,
+    "Avg Weekly Sales Needed": avg_weekly,
+}])
+
+def fmt_m(x):
+    return f"{x/1_000_000:.2f}M"
+
+display_df = fwd_sales_df.copy()
+display_df["CMY Commitments"] = display_df["CMY Commitments"].map(fmt_m)
+display_df["WASDE Exports"] = display_df["WASDE Exports"].map(fmt_m)
+display_df["Avg Weekly Sales Needed"] = display_df["Avg Weekly Sales Needed"].map(fmt_m)
+
+st.subheader("Path to WASDE Exports")
+st.dataframe(display_df, use_container_width=True, hide_index=True)
