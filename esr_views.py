@@ -192,6 +192,29 @@ def seasonal_commitments_plot(df_totals):
         mtick.FuncFormatter(lambda x, _: f"{x/1e3:,.0f}")
     )
 
+    # --- X axis as months ---
+    week_to_month = {
+        1:'Aug',2:'Aug',3:'Aug',4:'Aug',
+        5:'Sep',6:'Sep',7:'Sep',8:'Sep',
+        9:'Oct',10:'Oct',11:'Oct',12:'Oct',
+        13:'Nov',14:'Nov',15:'Nov',16:'Nov',
+        17:'Dec',18:'Dec',19:'Dec',20:'Dec',
+        21:'Jan',22:'Jan',23:'Jan',24:'Jan',
+        25:'Feb',26:'Feb',27:'Feb',28:'Feb',
+        29:'Mar',30:'Mar',31:'Mar',32:'Mar',
+        33:'Apr',34:'Apr',35:'Apr',36:'Apr',
+        37:'May',38:'May',39:'May',40:'May',
+        41:'Jun',42:'Jun',43:'Jun',44:'Jun',
+        45:'Jul',46:'Jul',47:'Jul',48:'Jul',
+        49:'Jul',50:'Jul',51:'Jul',52:'Jul'
+    }
+
+    weeks = np.arange(1, 53)
+    month_labels = [week_to_month[w] for w in weeks]
+
+    ax.set_xticks(weeks[::4])
+    ax.set_xticklabels(month_labels[::4])
+
     return fig
 
 def commitments_table(last_week: pd.DataFrame) -> pd.DataFrame:
