@@ -129,12 +129,7 @@ with plot2_2:
         hide_index=True
     )
 
-st.write("""
-Last but not least, it is helpful to know how much commodity need to be sold per week, on average, for sales to reach the WASDE's export number.
-Although not an apples to apples comparison (sales >= exports), it is helpful in checking if the WASDE number is feasible.
-If recent weekly sales > such average, the USDA might choose to raise exports, and lower ending stocks.
-You should also keep an eye on the pace of exports. If shipments are too slow, ending stocks will be higher than initially expected. And so forth.
-""")
+
 
 from usda_api import get_wasde_export
 
@@ -180,4 +175,10 @@ display_df["WASDE Exports"] = display_df["WASDE Exports"].map(fmt_m)
 display_df["Avg Weekly Sales Needed"] = display_df["Avg Weekly Sales Needed"].map(fmt_m)
 
 st.subheader("Path to WASDE Exports")
+st.write("""
+Last but not least, it is helpful to know how much commodity need to be sold per week, on average, for sales to reach the WASDE's export number.
+Although not an apples to apples comparison (sales >= exports), it is helpful in checking if the WASDE number is feasible.
+If recent weekly sales > such average, the USDA might choose to raise exports, and lower ending stocks.
+You should also keep an eye on the pace of exports. If shipments are too slow, ending stocks will be higher than initially expected. And so forth.
+""")
 st.dataframe(display_df, use_container_width=True, hide_index=True)
