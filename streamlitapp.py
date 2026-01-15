@@ -89,23 +89,25 @@ The USDA requires physical traders to report sales and shipments weekly.
 
 Moreover, large daily sales (≥100k MT) trigger a next-day *Flash Sales* report.
 
-The below treemap shows weekly sales by destination.
-The seasonal chart compares the current MY to the previous five.
+
+Anyhow, below you will find the numbers for the **Export Sales Report**
 """)
 
 from esr_views import weekly_sales_table
 
-st.dataframe(
-    weekly_sales_table(last_week),
-    #use_container_width=True,
-    hide_index=True,
-    column_config={
-        "CMY Net New Sales": st.column_config.NumberColumn(format="%,.0f"),
-        "Shipments": st.column_config.NumberColumn(format="%,.0f"),
-        "Cancellations": st.column_config.NumberColumn(format="%,.0f"),
-        "NMY New Sales": st.column_config.NumberColumn(format="%,.0f"),
-    },
-)
+weekly_df = weekly_sales_table(last_week).copy()
+
+for c in weekly_df.columns:
+    weekly_df[c] = weekly_df[c].map(lambda x: f"{x:,.0f}")
+
+st.dataframe(weekly_df, hide_index=True)
+
+
+
+st.write("""
+The below treemap shows weekly sales by destination.
+The seasonal chart compares the current MY to the previous five.
+""")
 
 
 
