@@ -93,6 +93,14 @@ The below treemap shows weekly sales by destination.
 The seasonal chart compares the current MY to the previous five.
 """)
 
+from esr_views import weekly_sales_table
+
+st.dataframe(
+    weekly_sales_table(last_week),
+    use_container_width=True,
+    hide_index=True,
+)
+
 
 plot1_1, plot1_2 = st.columns([1, 1])
 
@@ -160,7 +168,7 @@ need_to_sell = wasde_export - commitments
 avg_weekly = need_to_sell / weeks_left_CMY if weeks_left_CMY > 0 else 0
 
 fwd_sales_df = pd.DataFrame([{
-        "CMY Commitments": commitments,
+    "CMY Commitments": commitments,
     "WASDE Exports": wasde_export,
     "Weeks Left CMY": weeks_left_CMY,
     "Avg Weekly Sales Needed": avg_weekly,
