@@ -100,10 +100,10 @@ st.dataframe(
     #use_container_width=True,
     hide_index=True,
     column_config={
-        "CMY Net New Sales": st.column_config.NumberColumn(format="%,.0f", alignment="center"),
-        "Shipments": st.column_config.NumberColumn(format="%,.0f", alignment="center"),
-        "Cancellations": st.column_config.NumberColumn(format="%,.0f", alignment="center"),
-        "NMY New Sales": st.column_config.NumberColumn(format="%,.0f", alignment="center"),
+        "CMY Net New Sales": st.column_config.NumberColumn(format="%,.0f"),
+        "Shipments": st.column_config.NumberColumn(format="%,.0f"),
+        "Cancellations": st.column_config.NumberColumn(format="%,.0f"),
+        "NMY New Sales": st.column_config.NumberColumn(format="%,.0f"),
     },
 )
 
