@@ -3,6 +3,19 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
+st.markdown(
+    """
+    <style>
+        .block-container {
+            max-width: 1000px;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 from usda_api import get_esr_exports
 from esr_views import (
     build_last_week,
