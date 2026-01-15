@@ -85,15 +85,7 @@ def treemap_net_sales(last_week: pd.DataFrame, week_ending) :
     """
     k = compute_kpis(last_week)
 
-    title = (
-        f"<b>US Cotton Sales (running bales) - Week Ending {pd.to_datetime(week_ending).date()}.</b><br>"
-        f"<sup>"
-        f"<b>Net New CMY Sales</b>: {k['net_new_sales']:,.0f}; "
-        f"<b>Shipments</b>: {k['shipments']:,.0f}; "
-        f"<b>Cancelations</b>: {k['cancel']:,.0f}; "
-        f"<b>Next MY Sales</b>: {k['nmy_net_new_sales']:,.0f}."
-        f"</sup>"
-    )
+    title = ("US Cotton Sales (running bales) - Week Ending {pd.to_datetime(week_ending).date()}."    )
 
     fig = px.treemap(
         last_week,

@@ -97,9 +97,16 @@ from esr_views import weekly_sales_table
 
 st.dataframe(
     weekly_sales_table(last_week),
-    use_container_width=True,
+    #use_container_width=True,
     hide_index=True,
+    column_config={
+        "CMY Net New Sales": st.column_config.NumberColumn(format="%,.0f", alignment="center"),
+        "Shipments": st.column_config.NumberColumn(format="%,.0f", alignment="center"),
+        "Cancellations": st.column_config.NumberColumn(format="%,.0f", alignment="center"),
+        "NMY New Sales": st.column_config.NumberColumn(format="%,.0f", alignment="center"),
+    },
 )
+
 
 
 plot1_1, plot1_2 = st.columns([1, 1])
