@@ -81,6 +81,45 @@ last_week = build_last_week(df, "country_codes.xlsx", selected_date)
 week_ending = last_week["weekEndingDate"].iloc[0]
 
 
+from usda_api import get_wasde_export
+
+wasde_year = datetime.today().year
+wasde_export = get_wasde_export(API_KEY, wasde_year)
+
+
+from datetime import datetime
+
+def weeks_left_cmy(latest_week_date: datetime) -> int:
+    end_year = (
+        datetime.today().year
+        if datetime.today().month < 8
+        else datetime.today().year + 1
+    )
+
+    end = datetime(end_year, 7, 31)
+    delta = end - latest_week_date
+
+    return max(int(delta.days / 7), 0)
+
+latest_week_date = last_week["weekEndingDate"].iloc[0]
+weeks_left_CMY = weeks_left_cmy(latest_week_date)
+
+commitments = float(last_week["currentMYTotalCommitment"].sum())
+
+need_to_sell = wasde_export - commitments
+avg_weekly = need_to_sell / weeks_left_CMY if weeks_left_CMY > 0 else 0
+
+fwd_sales_df = pd.DataFrame([{
+    "CMY Commitments": commitments,
+    "WASDE Exports": wasde_export,
+    "Weeks Left CMY": weeks_left_CMY,
+    "Avg Weekly Sales Needed": avg_weekly,
+}])
+
+def fmt_m(x):
+    return f"{x/1_000_000:.2f}M"
+
+
 # ---------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------
@@ -134,7 +173,7 @@ with plot1_1:
 
 with plot1_2:
     st.subheader("Cumulative Commitments: CMY vs 5 previous years")
-    st.pyplot(seasonal_commitments_plot(df))
+    st.pyplot(seasonal_commitments_plot(df, wasde_export))
 
 
 st.write("""
@@ -159,45 +198,6 @@ with plot2_2:
         hide_index=True
     )
 
-
-
-from usda_api import get_wasde_export
-
-wasde_year = datetime.today().year
-wasde_export = get_wasde_export(API_KEY, wasde_year)
-
-
-from datetime import datetime
-
-def weeks_left_cmy(latest_week_date: datetime) -> int:
-    end_year = (
-        datetime.today().year
-        if datetime.today().month < 8
-        else datetime.today().year + 1
-    )
-
-    end = datetime(end_year, 7, 31)
-    delta = end - latest_week_date
-
-    return max(int(delta.days / 7), 0)
-
-latest_week_date = last_week["weekEndingDate"].iloc[0]
-weeks_left_CMY = weeks_left_cmy(latest_week_date)
-
-commitments = float(last_week["currentMYTotalCommitment"].sum())
-
-need_to_sell = wasde_export - commitments
-avg_weekly = need_to_sell / weeks_left_CMY if weeks_left_CMY > 0 else 0
-
-fwd_sales_df = pd.DataFrame([{
-    "CMY Commitments": commitments,
-    "WASDE Exports": wasde_export,
-    "Weeks Left CMY": weeks_left_CMY,
-    "Avg Weekly Sales Needed": avg_weekly,
-}])
-
-def fmt_m(x):
-    return f"{x/1_000_000:.2f}M"
 
 display_df = fwd_sales_df.copy()
 display_df["CMY Commitments"] = display_df["CMY Commitments"].map(fmt_m)

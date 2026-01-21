@@ -130,7 +130,7 @@ def commitments_hbar(last_week):
     return fig
 
 
-def seasonal_commitments_plot(df_totals):
+def seasonal_commitments_plot(df_totals, wasde_export=None):
     data = df_totals[["weekEndingDate", "accumulatedExports", "outstandingSales"]]
 
     weekly = (
@@ -184,11 +184,20 @@ def seasonal_commitments_plot(df_totals):
         ax.plot(d["MktingWeek"], total, color=c, linewidth=1.5)
 
     ax.set_xlim(0.5, 50)
-    #ax.set_ylim(0, 20_000_000)
-
-    #ax.set_title("Cumulative Commitments: CMY vs 5 previous years", fontsize=15, fontweight="bold")
     ax.set_ylabel("Thousand Bales")
+    
+        # WASDE line
+    if wasde_export is not None:
+        ax.axhline(
+            y=wasde_export,
+            color="black",
+            linestyle="--",
+            linewidth=1.2,
+            label=f"WASDE: {wasde_export/1e3:,.0f}",
+        )
+
     ax.legend()
+    return fig
 
     ax.yaxis.set_major_formatter(
         mtick.FuncFormatter(lambda x, _: f"{x/1e3:,.0f}")

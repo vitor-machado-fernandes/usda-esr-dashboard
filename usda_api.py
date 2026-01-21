@@ -33,6 +33,10 @@ import requests
 import pandas as pd
 
 PSD_COTTON = 2631000
+PSD_CORN = 0440000
+PSD_SOYBEANS = 2222000
+PSD_WHEAT = 0410000
+PSD_SOYMEAL = 081310
 EXPORTS_ID = 88
 
 def get_wasde_export(api_key: str, year: int) -> float:
