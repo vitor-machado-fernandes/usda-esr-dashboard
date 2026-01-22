@@ -134,6 +134,7 @@ This report allows the public to monitor the pace in which American companies ar
 
 
 **How it works**
+         
 The USDA requires physical traders to report sales and shipments weekly.
 - New sales → Outstanding Sales  
 - Shipments → Accumulated Exports  

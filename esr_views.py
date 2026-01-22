@@ -197,7 +197,6 @@ def seasonal_commitments_plot(df_totals, wasde_export=None):
         )
 
     ax.legend()
-    return fig
 
     ax.yaxis.set_major_formatter(
         mtick.FuncFormatter(lambda x, _: f"{x/1e3:,.0f}")
