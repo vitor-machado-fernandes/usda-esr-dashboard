@@ -51,12 +51,17 @@ commodity_map = {
 commodity = st.selectbox("Commodity", list(commodity_map.keys()))
 commodity_code = commodity_map[commodity]
 
-start_year, end_year = st.slider(
-    "Market years",
-    2021,
-    datetime.today().year + 1,
-    (2021, 2026),
-)
+start_year = 2021
+end_year = datetime.today().year+1
+
+psd_map = {
+    "Cotton": "2631000",
+    "Corn": "0440000",
+    "Soybeans": "2222000",
+    "All Wheat": "0410000",
+    "Soybean Meal": "0813100",
+    "Soybean Oil": "4232000",   # <-- put your correct PSD code if different
+}
 
 # ---------------------------------------------------------------------
 # Data loading
@@ -77,14 +82,24 @@ selected_date = None if picked == "Latest" else picked
 # ---------------------------------------------------------------------
 # Build current-MY snapshot
 # ---------------------------------------------------------------------
+my_start_month_map = {
+    "Cotton": 8,
+    "Corn": 9,
+    "Soybeans": 9,
+    "All Wheat": 6,
+    "Soybean Cake & Meal": 10,
+    "Soybean Oil": 10,
+}
+
+
 last_week = build_last_week(df, "country_codes.xlsx", selected_date)
 week_ending = last_week["weekEndingDate"].iloc[0]
 
 
 from usda_api import get_wasde_export
 
-wasde_year = datetime.today().year
-wasde_export = get_wasde_export(API_KEY, wasde_year)
+wasde_year = datetime.today().year - 1
+wasde_export = get_wasde_export(API_KEY, psd_map[commodity], wasde_year)
 
 
 from datetime import datetime
@@ -174,7 +189,8 @@ with plot1_1:
 
 with plot1_2:
     st.subheader("Cumulative Commitments: CMY vs 5 previous years")
-    st.pyplot(seasonal_commitments_plot(df, wasde_export))
+    my_start = my_start_month_map[commodity]
+    st.pyplot(seasonal_commitments_plot(df, wasde_export, my_start_month=my_start))
 
 
 st.write("""

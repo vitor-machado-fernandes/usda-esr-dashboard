@@ -124,13 +124,12 @@ def commitments_hbar(last_week):
 
     ax.legend((p1[0], p2[0]), ("Shipments", "Outstanding"))
     ax.set_xlabel("Thousands of Bales")
-    #ax.set_title("US Cotton Commitments per Destination")
     ax.xaxis.set_major_formatter(mtick.FuncFormatter(lambda x, _: f"{x:,.0f}"))
 
     return fig
 
 
-def seasonal_commitments_plot(df_totals, wasde_export=None):
+def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
     data = df_totals[["weekEndingDate", "accumulatedExports", "outstandingSales"]]
 
     weekly = (
@@ -139,22 +138,14 @@ def seasonal_commitments_plot(df_totals, wasde_export=None):
         .reset_index()
     )
 
-    weekly["MY"] = (
-        weekly["weekEndingDate"].dt.year
-        + (
-            (weekly["weekEndingDate"].dt.month > 8)
-            | (
-                (weekly["weekEndingDate"].dt.month == 8)
-                & (weekly["weekEndingDate"].dt.day >= 6)
-            )
-        ).astype(int)
-    )
+    # Marketing year label = year in which the MY ends
+    weekly["MY"] = weekly["weekEndingDate"].dt.year + (weekly["weekEndingDate"].dt.month >= my_start_month).astype(int)
 
     weekly = weekly.sort_values(["MY", "weekEndingDate"])
     weekly["MktingWeek"] = weekly.groupby("MY").cumcount() + 1
 
     # Current MY
-    CMY = datetime.today().year if datetime.today().month < 8 else datetime.today().year + 1
+    CMY = datetime.today().year + (datetime.today().month >= my_start_month)
     cmy_df = weekly[weekly["MY"] == CMY]
 
     fig, ax = plt.subplots(figsize=(10, 7))
@@ -183,10 +174,10 @@ def seasonal_commitments_plot(df_totals, wasde_export=None):
         total = d["accumulatedExports"] + d["outstandingSales"]
         ax.plot(d["MktingWeek"], total, color=c, linewidth=1.5)
 
-    ax.set_xlim(0.5, 50)
+    ax.set_xlim(0.5, 52)
     ax.set_ylabel("Thousand Bales")
     
-        # WASDE line
+    # WASDE line
     if wasde_export is not None:
         ax.axhline(
             y=wasde_export,
@@ -203,24 +194,13 @@ def seasonal_commitments_plot(df_totals, wasde_export=None):
     )
 
     # --- X axis as months ---
-    week_to_month = {
-        1:'Aug',2:'Aug',3:'Aug',4:'Aug',
-        5:'Sep',6:'Sep',7:'Sep',8:'Sep',
-        9:'Oct',10:'Oct',11:'Oct',12:'Oct',
-        13:'Nov',14:'Nov',15:'Nov',16:'Nov',
-        17:'Dec',18:'Dec',19:'Dec',20:'Dec',
-        21:'Jan',22:'Jan',23:'Jan',24:'Jan',
-        25:'Feb',26:'Feb',27:'Feb',28:'Feb',
-        29:'Mar',30:'Mar',31:'Mar',32:'Mar',
-        33:'Apr',34:'Apr',35:'Apr',36:'Apr',
-        37:'May',38:'May',39:'May',40:'May',
-        41:'Jun',42:'Jun',43:'Jun',44:'Jun',
-        45:'Jul',46:'Jul',47:'Jul',48:'Jul',
-        49:'Jul',50:'Jul',51:'Jul',52:'Jul'
-    }
+    months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    ordered = months[my_start_month-1:] + months[:my_start_month-1]
 
     weeks = np.arange(1, 53)
-    month_labels = [week_to_month[w] for w in weeks]
+    month_labels = []
+    for w in weeks:
+        month_labels.append(ordered[min((w-1)//4, 11)]) # 4 weeks per month bucket
 
     ax.set_xticks(weeks[::4])
     ax.set_xticklabels(month_labels[::4])
