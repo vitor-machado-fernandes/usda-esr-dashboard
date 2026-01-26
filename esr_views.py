@@ -85,20 +85,18 @@ def treemap_net_sales(last_week: pd.DataFrame, week_ending) :
     """
     k = compute_kpis(last_week)
 
-    title = (f"US Cotton Sales (running bales) - Week Ending {pd.to_datetime(week_ending).date()}.")
-
     fig = px.treemap(
         last_week,
         path=["countryDescription"],
         values="currentMYNetSales",
         color="currentMYNetSales",
-        color_continuous_scale="Oranges",
-        title=title,
+        color_continuous_scale="Oranges"
     )
 
     fig.update_traces(texttemplate="%{label}<br>%{value:,.0f}")
     fig.update_coloraxes(showscale=False)
-    fig.update_layout(height=525)
+    fig.update_layout(height=320, margin=dict(l=10, r=10, t=10, b=10))
+
 
     return fig
 
@@ -177,12 +175,21 @@ def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
         d = weekly[weekly["MY"] == y]
         total = d["accumulatedExports"] + d["outstandingSales"]
         ax.plot(d["MktingWeek"], total, color=c, linewidth=1.5)
+        ax.text(
+            d["MktingWeek"].max() + 0.3,
+            total.iloc[-1],
+            str(y),
+            color=c,
+            fontsize=9,
+            va="center"
+        )
+
 
     # x-axis range: avoid clipping 53-week years
     xmax = int(max(52, weekly["MktingWeek"].max()))
     ax.set_xlim(0.5, xmax)
 
-    ax.set_ylabel("Thousand Bales")
+    ax.set_ylabel("Thousand Bales or Tons")
 
     # WASDE line
     if wasde_export is not None:
@@ -210,6 +217,7 @@ def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
 
     ax.set_xticks(weeks[::4])
     ax.set_xticklabels(month_labels[::4])
+    fig.tight_layout()
 
     return fig
 

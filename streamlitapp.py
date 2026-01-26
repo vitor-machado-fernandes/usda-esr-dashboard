@@ -104,6 +104,8 @@ wasde_export = get_wasde_export(API_KEY, psd_map[commodity], wasde_year)
 
 from datetime import datetime
 
+# Define how many weeks left on MY
+
 def weeks_left_cmy(latest_week_date: datetime) -> int:
     end_year = (
         datetime.today().year
@@ -120,15 +122,17 @@ latest_week_date = last_week["weekEndingDate"].iloc[0]
 weeks_left_CMY = weeks_left_cmy(latest_week_date)
 
 commitments = float(last_week["currentMYTotalCommitment"].sum())
+shipments = float(last_week["accumulatedExports"].sum())
 
-need_to_sell = wasde_export - commitments
-avg_weekly = need_to_sell / weeks_left_CMY if weeks_left_CMY > 0 else 0
+need_to_ship = wasde_export - shipments
+avg_weekly = need_to_ship / weeks_left_CMY if weeks_left_CMY > 0 else 0
 
 fwd_sales_df = pd.DataFrame([{
     "CMY Commitments": commitments,
-    "WASDE Exports": wasde_export,
+    "CMY Exported": shipments,
+    "WASDE Export Forecast": wasde_export,
     "Weeks Left CMY": weeks_left_CMY,
-    "Avg Weekly Sales Needed": avg_weekly,
+    "Avg Weekly Shipments Needed": avg_weekly,
 }])
 
 def fmt_m(x):
@@ -178,21 +182,24 @@ The below **treemap** shows weekly sales (tons for grains, bales for cotton) by 
 The **seasonal chart** compares the current MY to the previous five (1,000s of tons for grains, 1,000s of bales for cotton).
 
 """)
+TITLE_H = 100  # pixels; tweak 60–90 until perfect
 
+col1, col2 = st.columns(2, gap="small")
 
+with col1:
+    st.markdown(
+        f"<div style='height:{TITLE_H}px'><h3>US Sales (Tons or Running bales) - Week Ending {pd.to_datetime(week_ending).date()}.</h3></div>",
+        unsafe_allow_html=True    )
+    st.plotly_chart(treemap_net_sales(last_week, week_ending), use_container_width=True)
 
-plot1_1, plot1_2 = st.columns([1, 1])
-
-with plot1_1:
-    st.plotly_chart(
-        treemap_net_sales(last_week, week_ending),
-        use_container_width=True,
+with col2:
+    st.markdown(
+        f"<div style='height:{TITLE_H}px'><h3>Cumulative Commitments: CMY vs 5 previous years</h3></div>",
+        unsafe_allow_html=True
     )
-
-with plot1_2:
-    st.subheader("Cumulative Commitments: CMY vs 5 previous years")
     my_start = my_start_month_map[commodity]
-    st.pyplot(seasonal_commitments_plot(df, wasde_export, my_start_month=my_start))
+    st.pyplot(seasonal_commitments_plot(df, wasde_export, my_start_month=my_start), use_container_width=True)
+
 
 
 st.write("""
@@ -213,21 +220,24 @@ with plot2_2:
     st.dataframe(
         commitments_table(last_week),
         use_container_width=True,
-        height=375,
+        height=325,
         hide_index=True
     )
 
 
-display_df = fwd_sales_df.copy()
-display_df["CMY Commitments"] = display_df["CMY Commitments"].map(fmt_m)
-display_df["WASDE Exports"] = display_df["WASDE Exports"].map(fmt_m)
-display_df["Avg Weekly Sales Needed"] = display_df["Avg Weekly Sales Needed"].map(fmt_m)
+
 
 st.subheader("Path to WASDE Exports")
 st.write("""
-Last but not least, it is helpful to know how much commodity need to be sold per week, on average, for sales to reach the WASDE's export number.
-Although not an apples to apples comparison (sales >= exports), it is helpful in checking if the WASDE number is feasible.
-If recent weekly sales > such average, the USDA might choose to raise exports, and lower ending stocks.
-You should also keep an eye on the pace of exports. If shipments are too slow, ending stocks will be higher than initially expected. And so forth.
+Last but not least, it is helpful to know how much commodity need to be shipped per week, on average, for the WASDE's forecasted export number to be met.
+If the average of weekly shipments needed is high vs what is actually being shipped, the USDA may need to reduce the exports forecast - which will then result in higher ending stocks. 
+Also, keep in mind that before a commodity is shipped, it needs to be sold. Slow sales will likely result in reduced shipments.
 """)
+
+display_df = fwd_sales_df.copy()
+display_df["CMY Commitments"] = display_df["CMY Commitments"].map(fmt_m)
+display_df["CMY Exported"] = display_df["CMY Exported"].map(fmt_m)
+display_df["WASDE Export Forecast"] = display_df["WASDE Export Forecast"].map(fmt_m)
+display_df["Avg Weekly Shipments Needed"] = display_df["Avg Weekly Shipments Needed"].map(fmt_m)
+
 st.dataframe(display_df, use_container_width=True, hide_index=True)
