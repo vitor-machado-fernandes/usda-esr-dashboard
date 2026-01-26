@@ -26,6 +26,7 @@ def build_last_week(
         "currentMYTotalCommitment",
         "accumulatedExports",
         "outstandingSales",
+        "nextMYOutstandingSales",
     ]
 
     df = df_totals[cols].copy()
@@ -66,6 +67,10 @@ def compute_kpis(last_week: pd.DataFrame) -> dict:
         "cancel": last_week["Cancel"].sum(),
         "shipments": last_week["weeklyExports"].sum(),
         "nmy_net_new_sales": last_week["nextMYNetSales"].sum(),
+        "cum_exports": last_week["accumulatedExports"].sum(),
+        "outstanding": last_week["outstandingSales"].sum(),
+        "commitment": last_week["currentMYTotalCommitment"].sum(),
+        "nmy_outstanding": last_week["nextMYOutstandingSales"].sum(),
     }
 
 
@@ -76,6 +81,15 @@ def weekly_sales_table(last_week: pd.DataFrame) -> pd.DataFrame:
         "Shipments": k["shipments"],
         "Cancellations": k["cancel"],
         "NMY New Sales": k["nmy_net_new_sales"],
+    }])
+
+def total_exports_table(last_week: pd.DataFrame) -> pd.DataFrame:
+    k = compute_kpis(last_week)
+    return pd.DataFrame([{
+        "Accumulated Exports": k["cum_exports"],
+        "Outstanding Sales": k["outstanding"],
+        "Total Commitment": k["commitment"],
+        "Next MY Sales": k["nmy_outstanding"],
     }])
 
 

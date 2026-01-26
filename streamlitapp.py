@@ -153,7 +153,7 @@ st.write("""
 We know that prices are inversely related to the availability of stocks (or better, stocks/use).
 After all, the more of a commodity is stored in a bin/tank/warehouse somewhere, the less likely it is for consumers to panic-buy, and send prices soaring.
 
-We have also seen that, per the WASDE balance sheet, exports are a key component of demand. Luckily, every Thursday at 7:30am CT, the USDA releases the Export Sales Report (ESR).
+We have also seen that, per the WASDE balance sheet, exports are a key component of demand. Luckily for us, every Thursday at 7:30am CT, the USDA releases the Export Sales Report (ESR).
 This report allows the public to monitor the pace in which American companies are selling, and shipping, commodity to different foreign nations.
 
 
@@ -167,7 +167,7 @@ The USDA requires physical traders to report sales and shipments weekly.
 Moreover, large daily sales (≥100k MT) trigger a next-day *Flash Sales* report.
 
 
-Anyhow, below you will find the numbers for the **Export Sales Report**
+Anyhow, below you will find the **weekly** numbers for the **Export Sales Report** (in bales for cotton, and tons for grains):
 """)
 
 from esr_views import weekly_sales_table
@@ -179,7 +179,18 @@ for c in weekly_df.columns:
 
 st.dataframe(weekly_df, hide_index=True)
 
+st.write("""
+And the **cumulative numbers** for the Marketing Year (MY):
+""")
 
+from esr_views import total_exports_table
+
+weekly_df_2 = total_exports_table(last_week).copy()
+
+for c in weekly_df_2.columns:
+    weekly_df_2[c] = weekly_df_2[c].map(lambda x: f"{x:,.0f}")
+
+st.dataframe(weekly_df_2, hide_index=True)
 
 st.write("""
 
