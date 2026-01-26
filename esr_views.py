@@ -123,30 +123,35 @@ def commitments_hbar(last_week):
     p2 = ax.barh(country, outst, left=shipped, color="#a3b18a")
 
     ax.legend((p1[0], p2[0]), ("Shipments", "Outstanding"))
-    ax.set_xlabel("Thousands of Bales")
+    ax.set_xlabel("Thousands of Bales or Tons")
     ax.xaxis.set_major_formatter(mtick.FuncFormatter(lambda x, _: f"{x:,.0f}"))
 
     return fig
 
 
 def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
-    data = df_totals[["weekEndingDate", "accumulatedExports", "outstandingSales"]]
+    # --- safety check ---
+    if "MY" not in df_totals.columns:
+        raise ValueError("df_totals must contain column 'MY'. Add it in get_esr_exports() by stamping the loop year.")
 
+    data = df_totals[["MY", "weekEndingDate", "accumulatedExports", "outstandingSales"]].copy()
+    data["weekEndingDate"] = pd.to_datetime(data["weekEndingDate"])
+
+    # Aggregate to one row per (MY, weekEndingDate)
     weekly = (
-        data.groupby("weekEndingDate")[["accumulatedExports", "outstandingSales"]]
+        data.groupby(["MY", "weekEndingDate"], as_index=False)[["accumulatedExports", "outstandingSales"]]
         .sum()
-        .reset_index()
     )
 
-    # Marketing year label = year in which the MY ends
-    weekly["MY"] = weekly["weekEndingDate"].dt.year + (weekly["weekEndingDate"].dt.month >= my_start_month).astype(int)
-
+    # Week index within each MY (this is your x-axis)
     weekly = weekly.sort_values(["MY", "weekEndingDate"])
     weekly["MktingWeek"] = weekly.groupby("MY").cumcount() + 1
 
-    # Current MY
-    CMY = datetime.today().year + (datetime.today().month >= my_start_month)
-    cmy_df = weekly[weekly["MY"] == CMY]
+    # Define CMY as the MY associated with the latest report week we actually have
+    latest_date = weekly["weekEndingDate"].max()
+    CMY = int(weekly.loc[weekly["weekEndingDate"] == latest_date, "MY"].mode().iloc[0])
+
+    cmy_df = weekly[weekly["MY"] == CMY].copy()
 
     fig, ax = plt.subplots(figsize=(10, 7))
 
@@ -165,8 +170,7 @@ def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
     )
 
     # Prior 5 MYs
-    prev_years = sorted(weekly["MY"].unique())
-    prev_years = [y for y in prev_years if y < CMY][-5:]
+    prev_years = sorted([y for y in weekly["MY"].unique() if y < CMY])[-5:]
     colors = cm.Greys(np.linspace(0.3, 0.8, len(prev_years)))
 
     for y, c in zip(prev_years, colors):
@@ -174,9 +178,12 @@ def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
         total = d["accumulatedExports"] + d["outstandingSales"]
         ax.plot(d["MktingWeek"], total, color=c, linewidth=1.5)
 
-    ax.set_xlim(0.5, 52)
+    # x-axis range: avoid clipping 53-week years
+    xmax = int(max(52, weekly["MktingWeek"].max()))
+    ax.set_xlim(0.5, xmax)
+
     ax.set_ylabel("Thousand Bales")
-    
+
     # WASDE line
     if wasde_export is not None:
         ax.axhline(
@@ -189,23 +196,24 @@ def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
 
     ax.legend()
 
+    # Keep your existing “thousands” formatting
     ax.yaxis.set_major_formatter(
         mtick.FuncFormatter(lambda x, _: f"{x/1e3:,.0f}")
     )
 
-    # --- X axis as months ---
+    # --- X axis as months (same logic you had, but sized to xmax) ---
     months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
     ordered = months[my_start_month-1:] + months[:my_start_month-1]
 
-    weeks = np.arange(1, 53)
-    month_labels = []
-    for w in weeks:
-        month_labels.append(ordered[min((w-1)//4, 11)]) # 4 weeks per month bucket
+    weeks = np.arange(1, xmax + 1)
+    month_labels = [ordered[min((w - 1)//4, 11)] for w in weeks]
 
     ax.set_xticks(weeks[::4])
     ax.set_xticklabels(month_labels[::4])
 
     return fig
+
+
 
 def commitments_table(last_week: pd.DataFrame) -> pd.DataFrame:
     df = (

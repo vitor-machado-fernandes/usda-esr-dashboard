@@ -21,7 +21,11 @@ def get_esr_exports(api_key: str, commodity_code: int, start_year: int, end_year
         )
         r = requests.get(url, headers=headers, timeout=30)
         r.raise_for_status()
-        dfs.append(pd.DataFrame(r.json()))
+
+        df_year = pd.DataFrame(r.json())
+        df_year["MY"] = year
+
+        dfs.append(df_year)
 
     df = pd.concat(dfs, ignore_index=True)
     df["weekEndingDate"] = pd.to_datetime(df["weekEndingDate"])

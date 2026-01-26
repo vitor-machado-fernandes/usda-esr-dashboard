@@ -173,8 +173,10 @@ st.dataframe(weekly_df, hide_index=True)
 
 
 st.write("""
-The below treemap shows weekly sales by destination.
-The seasonal chart compares the current MY to the previous five.
+
+The below **treemap** shows weekly sales (tons for grains, bales for cotton) by destination.       
+The **seasonal chart** compares the current MY to the previous five (1,000s of tons for grains, 1,000s of bales for cotton).
+
 """)
 
 
