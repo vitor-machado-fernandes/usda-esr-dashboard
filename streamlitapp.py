@@ -51,6 +51,11 @@ commodity_map = {
 commodity = st.selectbox("Commodity", list(commodity_map.keys()))
 commodity_code = commodity_map[commodity]
 
+# Units (for labeling)
+is_cotton = commodity.lower().startswith("cotton")
+unit = "Bales" if is_cotton else "Tons"
+unit_k = f"Thousands of {unit}"
+
 start_year = 2021
 end_year = datetime.today().year+1
 
@@ -145,7 +150,7 @@ def fmt_m(x):
 st.write("""
 **Fundamental Analysis: Commodity Exports**
 
-We have previously established that prices are inversely related to the availability of stocks (or better, stocks/use).
+We know that prices are inversely related to the availability of stocks (or better, stocks/use).
 After all, the more of a commodity is stored in a bin/tank/warehouse somewhere, the less likely it is for consumers to panic-buy, and send prices soaring.
 
 We have also seen that, per the WASDE balance sheet, exports are a key component of demand. Luckily, every Thursday at 7:30am CT, the USDA releases the Export Sales Report (ESR).
@@ -188,7 +193,7 @@ col1, col2 = st.columns(2, gap="small")
 
 with col1:
     st.markdown(
-        f"<div style='height:{TITLE_H}px'><h3>US Sales (Tons or Running bales) - Week Ending {pd.to_datetime(week_ending).date()}.</h3></div>",
+        f"<div style='height:{TITLE_H}px'><h3>US {commodity} Sales ({unit}) - Week Ending {pd.to_datetime(week_ending).date()}.</h3></div>",
         unsafe_allow_html=True    )
     st.plotly_chart(treemap_net_sales(last_week, week_ending), use_container_width=True)
 
@@ -198,7 +203,7 @@ with col2:
         unsafe_allow_html=True
     )
     my_start = my_start_month_map[commodity]
-    st.pyplot(seasonal_commitments_plot(df, wasde_export, my_start_month=my_start), use_container_width=True)
+    st.pyplot(seasonal_commitments_plot(df, wasde_export, my_start_month=my_start, unit_k=unit_k), use_container_width=True)
 
 
 
@@ -212,8 +217,8 @@ Try changing the *week ending* date to see how market dynamics shift over time.
 plot2_1, plot2_2 = st.columns([1, 1])
 
 with plot2_1:
-    st.subheader("Commitments by Destination")
-    st.pyplot(commitments_hbar(last_week))
+    st.subheader(f"{commodity} Commitments by Destination")
+    st.pyplot(commitments_hbar(last_week, unit_k=unit_k))
 
 with plot2_2:
     st.subheader(" ")

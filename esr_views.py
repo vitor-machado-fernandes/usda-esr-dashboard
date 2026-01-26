@@ -102,8 +102,7 @@ def treemap_net_sales(last_week: pd.DataFrame, week_ending) :
 
 
 
-
-def commitments_hbar(last_week):
+def commitments_hbar(last_week, unit_k="Thousands of Bales"):
     df = (
     last_week[["countryDescription", "accumulatedExports", "outstandingSales", "currentMYTotalCommitment"]]
     .sort_values("currentMYTotalCommitment", ascending=False)
@@ -121,13 +120,13 @@ def commitments_hbar(last_week):
     p2 = ax.barh(country, outst, left=shipped, color="#a3b18a")
 
     ax.legend((p1[0], p2[0]), ("Shipments", "Outstanding"))
-    ax.set_xlabel("Thousands of Bales or Tons")
+    ax.set_xlabel(unit_k)
     ax.xaxis.set_major_formatter(mtick.FuncFormatter(lambda x, _: f"{x:,.0f}"))
 
     return fig
 
 
-def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
+def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8, unit_k="Thousands of Bales"):
     # --- safety check ---
     if "MY" not in df_totals.columns:
         raise ValueError("df_totals must contain column 'MY'. Add it in get_esr_exports() by stamping the loop year.")
@@ -189,7 +188,7 @@ def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8):
     xmax = int(max(52, weekly["MktingWeek"].max()))
     ax.set_xlim(0.5, xmax)
 
-    ax.set_ylabel("Thousand Bales or Tons")
+    ax.set_ylabel(unit_k)
 
     # WASDE line
     if wasde_export is not None:
