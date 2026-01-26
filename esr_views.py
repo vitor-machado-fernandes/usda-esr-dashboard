@@ -107,10 +107,10 @@ def treemap_net_sales(last_week: pd.DataFrame, week_ending) :
 
 def commitments_hbar(last_week):
     df = (
-    last_week[["countryDescription", "accumulatedExports", "outstandingSales"]]
-    .sort_values("accumulatedExports", ascending=False)
+    last_week[["countryDescription", "accumulatedExports", "outstandingSales", "currentMYTotalCommitment"]]
+    .sort_values("currentMYTotalCommitment", ascending=False)
     .head(20)                      # 👈 top 20
-    .sort_values("accumulatedExports")  # 👈 re-sort for barh
+    .sort_values("currentMYTotalCommitment")  # 👈 re-sort for barh
 )
 
     country = df["countryDescription"]
