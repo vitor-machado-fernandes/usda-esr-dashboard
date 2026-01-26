@@ -262,3 +262,66 @@ def commitments_table(last_week: pd.DataFrame) -> pd.DataFrame:
     })
 
     return df
+
+
+def seasonal_line_plot(
+    df_totals: pd.DataFrame,
+    value_col: str,
+    title: str,
+    my_start_month: int = 8,
+    unit_k: str = "Thousands of Bales",
+    years: int = 5,
+):
+    if "MY" not in df_totals.columns:
+        raise ValueError("df_totals must contain column 'MY'.")
+
+    data = df_totals[["MY", "weekEndingDate", value_col]].copy()
+    data["weekEndingDate"] = pd.to_datetime(data["weekEndingDate"])
+
+    weekly = (
+        data.groupby(["MY", "weekEndingDate"], as_index=False)[value_col]
+        .sum()
+        .sort_values(["MY", "weekEndingDate"])
+    )
+    weekly["MktingWeek"] = weekly.groupby("MY").cumcount() + 1
+
+    latest_date = weekly["weekEndingDate"].max()
+    CMY = int(weekly.loc[weekly["weekEndingDate"] == latest_date, "MY"].mode().iloc[0])
+
+    plot_years = sorted([y for y in weekly["MY"].unique() if y <= CMY])[-years:]
+    colors = cm.Greys(np.linspace(0.3, 0.8, len(plot_years)))
+
+    fig, ax = plt.subplots(figsize=(5.2, 3.4))  # consistent size across all 5
+
+    for y, c in zip(plot_years, colors):
+        d = weekly[weekly["MY"] == y]
+        series = d[value_col] / 1_000  # display in thousands
+        ax.plot(d["MktingWeek"], series, color=c, linewidth=1.8)
+
+        # label at the end
+        ax.text(
+            d["MktingWeek"].max() + 0.3,
+            series.iloc[-1],
+            str(y),
+            color=c,
+            fontsize=8,
+            va="center"
+        )
+
+    xmax = int(max(52, weekly["MktingWeek"].max()))
+    ax.set_xlim(0.5, xmax + 2)
+
+    ax.set_title(title, fontsize=11)
+    ax.set_ylabel(unit_k)
+    ax.yaxis.set_major_formatter(mtick.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+
+    # month labels (same logic you already use)
+    months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    ordered = months[my_start_month-1:] + months[:my_start_month-1]
+    weeks = np.arange(1, xmax + 1)
+    month_labels = [ordered[min((w - 1)//4, 11)] for w in weeks]
+    ax.set_xticks(weeks[::4])
+    ax.set_xticklabels(month_labels[::4], fontsize=8)
+
+    fig.tight_layout()
+    return fig
