@@ -155,19 +155,14 @@ st.write("""
 We know that prices are inversely related to the availability of stocks (or better, stocks/use).
 After all, the more of a commodity is stored in a bin/tank/warehouse somewhere, the less likely it is for consumers to panic-buy, and send prices soaring.
 
-We have also seen that, per the WASDE balance sheet, exports are a key component of demand. Luckily for us, every Thursday at 7:30am CT, the USDA releases the Export Sales Report (ESR).
+We have also know that, per the WASDE balance sheet, exports are a key component of demand. Luckily for us, every Thursday at 7:30am CT, the USDA releases the Export Sales Report (ESR).
 This report allows the public to monitor the pace in which American companies are selling, and shipping, commodity to different foreign nations.
 
 
 **How it works**
          
-The USDA requires physical traders to report sales and shipments weekly.
-- New sales → Outstanding Sales  
-- Shipments → Accumulated Exports  
-- Outstanding + Accumulated = Total Commitments  
-
-Moreover, large daily sales (≥100k MT) trigger a next-day *Flash Sales* report.
-
+The USDA requires physical traders to report sales and shipments weekly. In more detail: once a sale is agreed upon, the exporter must go to the USDA FAS Export Sales Reporting System and report the quantity, destination country, commodity, and marketing year involved in the sale.
+This data will feed into the next Export Sales Report. Moreover, large daily sales (≥100k MT) trigger a next-day *Flash Sales* report.
 
 Anyhow, below you will find the **weekly** numbers for the **Export Sales Report** (in bales for cotton, and tons for grains):
 """)
@@ -193,6 +188,13 @@ for c in weekly_df_2.columns:
     weekly_df_2[c] = weekly_df_2[c].map(lambda x: f"{x:,.0f}")
 
 st.dataframe(weekly_df_2, hide_index=True)
+
+st.write("""
+This is how new data progresses through tp the cumulative numbers:
+- New sales → Outstanding Sales  
+- Shipments → Accumulated Exports  
+- Outstanding + Accumulated = Total Commitments  
+""")
 
 
 ### Line Charts ###
@@ -247,6 +249,7 @@ with col2:
     st.pyplot(seasonal_commitments_plot(df, wasde_export, my_start_month=my_start, unit_k=unit_k), use_container_width=True)
 
 
+st.subheader(f"{commodity} Commitments by Destination")
 
 st.write("""
 The chart and table below combine destination and total commitments.
@@ -258,11 +261,9 @@ Try changing the *week ending* date to see how market dynamics shift over time.
 plot2_1, plot2_2 = st.columns([1, 1])
 
 with plot2_1:
-    st.subheader(f"{commodity} Commitments by Destination")
     st.pyplot(commitments_hbar(last_week, unit_k=unit_k))
 
 with plot2_2:
-    st.subheader(" ")
     st.dataframe(
         commitments_table(last_week),
         use_container_width=True,
@@ -277,7 +278,7 @@ st.subheader("Path to WASDE Exports")
 st.write("""
 Last but not least, it is helpful to know how much commodity need to be shipped per week, on average, for the WASDE's forecasted export number to be met.
 If the average of weekly shipments needed is high vs what is actually being shipped, the USDA may need to reduce the exports forecast - which will then result in higher ending stocks. 
-Also, keep in mind that before a commodity is shipped, it needs to be sold. Slow sales will likely result in reduced shipments.
+Also, keep in mind that before a commodity is shipped, it needs to be sold. Slow sales will likely result in reduced shipments. Do check the shipments seasonal graph above too.
 """)
 
 display_df = fwd_sales_df.copy()
