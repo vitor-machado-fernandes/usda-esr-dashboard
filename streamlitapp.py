@@ -249,7 +249,7 @@ with col2:
     st.pyplot(seasonal_commitments_plot(df, wasde_export, my_start_month=my_start, unit_k=unit_k), use_container_width=True)
 
 
-st.subheader(f"{commodity} Commitments by Destination")
+st.subheader(f"{commodity} YTD Commitments by Destination")
 
 st.write("""
 The chart and table below combine destination and total commitments.
@@ -278,7 +278,7 @@ st.subheader("Path to WASDE Exports")
 st.write("""
 Last but not least, it is helpful to know how much commodity need to be shipped per week, on average, for the WASDE's forecasted export number to be met.
 If the average of weekly shipments needed is high vs what is actually being shipped, the USDA may need to reduce the exports forecast - which will then result in higher ending stocks. 
-Also, keep in mind that before a commodity is shipped, it needs to be sold. Slow sales will likely result in reduced shipments. Do check the shipments seasonal graph above too.
+Also, keep in mind that before a commodity is shipped, it needs to be sold. Slow sales will likely result in reduced shipments. Do check the shipments seasonal graph (way) above too.
 """)
 
 display_df = fwd_sales_df.copy()
