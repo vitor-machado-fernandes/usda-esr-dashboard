@@ -76,6 +76,8 @@ def load_esr(api_key, code, y0, y1):
     return get_esr_exports(api_key, code, y0, y1)
 
 df = load_esr(API_KEY, commodity_code, start_year, end_year)
+df["Cancel"] = df["grossNewSales"] - df["currentMYNetSales"]
+
 
 # ---------------------------------------------------------------------
 # Date selection
@@ -192,11 +194,39 @@ for c in weekly_df_2.columns:
 
 st.dataframe(weekly_df_2, hide_index=True)
 
-st.write("""
 
+### Line Charts ###
+st.subheader("Seasonal Weekly Pace (last 5 MYs)")
+st.write(
+"""
+Below you can see seasonal charts for New CMY Sales, Shipments, Cancelations; as well as Next Marketing Year New Sales, and Outstanding Sales. 
+"""
+)
+
+from esr_views import seasonal_line_plot
+
+my_start = my_start_month_map[commodity]
+
+row1 = st.columns(3, gap="small")
+with row1[0]:
+    st.pyplot(seasonal_line_plot(df, "currentMYNetSales", "Net New Sales", my_start, unit_k), use_container_width=True)
+with row1[1]:
+    st.pyplot(seasonal_line_plot(df, "weeklyExports", "Shipments", my_start, unit_k), use_container_width=True)
+with row1[2]:
+    st.pyplot(seasonal_line_plot(df, "Cancel", "Cancellations", my_start, unit_k), use_container_width=True)
+
+row2 = st.columns(2, gap="small")
+with row2[0]:
+    st.pyplot(seasonal_line_plot(df, "nextMYNetSales", "NMY New Sales", my_start, unit_k), use_container_width=True)
+with row2[1]:
+    st.pyplot(seasonal_line_plot(df, "nextMYOutstandingSales", "NMY Outstanding", my_start, unit_k), use_container_width=True)
+
+
+### Treemap and Seasonal Cumulative
+st.markdown("<br>", unsafe_allow_html=True)
+st.write("""
 The below **treemap** shows weekly sales (tons for grains, bales for cotton) by destination.       
 The **seasonal chart** compares the current MY to the previous five (1,000s of tons for grains, 1,000s of bales for cotton).
-
 """)
 TITLE_H = 100  # pixels; tweak 60–90 until perfect
 
@@ -257,3 +287,5 @@ display_df["WASDE Export Forecast"] = display_df["WASDE Export Forecast"].map(fm
 display_df["Avg Weekly Shipments Needed"] = display_df["Avg Weekly Shipments Needed"].map(fmt_m)
 
 st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+
