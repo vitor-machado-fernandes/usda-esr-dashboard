@@ -111,22 +111,27 @@ wasde_export = get_wasde_export(API_KEY, psd_map[commodity], wasde_year)
 
 from datetime import datetime
 
+# ---------------------------------------------------------------------
 # Define how many weeks left on MY
+# ---------------------------------------------------------------------
 
-def weeks_left_cmy(latest_week_date: datetime) -> int:
-    end_year = (
-        datetime.today().year
-        if datetime.today().month < 8
-        else datetime.today().year + 1
-    )
-
-    end = datetime(end_year, 7, 31)
+def weeks_left_cmy(latest_week_date: datetime, my_start_month: int) -> int:
+    """
+    Weeks left in the current marketing year, based on the commodity's MY start month.
+    MY runs from my_start_month/1 through the day before my_start_month/1 next year.
+    """
+    today = datetime.today()
+    
+    end_year = today.year if today.month < my_start_month else today.year + 1
+    end = datetime(end_year, my_start_month, 1) - pd.Timedelta(days=1)
+    
     delta = end - latest_week_date
-
     return max(int(delta.days / 7), 0)
 
+my_start = my_start_month_map[commodity]
+
 latest_week_date = last_week["weekEndingDate"].iloc[0]
-weeks_left_CMY = weeks_left_cmy(latest_week_date)
+weeks_left_CMY = weeks_left_cmy(latest_week_date, my_start)
 
 commitments = float(last_week["currentMYTotalCommitment"].sum())
 shipments = float(last_week["accumulatedExports"].sum())
