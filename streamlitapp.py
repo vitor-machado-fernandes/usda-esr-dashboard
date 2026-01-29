@@ -240,8 +240,10 @@ TITLE_H = 100  # pixels; tweak 60–90 until perfect
 col1, col2 = st.columns(2, gap="small")
 
 with col1:
+    cmy_net_new_sales = last_week["currentMYNetSales"].sum()
+    cmy_net_new_sales_fmt = f"{cmy_net_new_sales:,.0f}"
     st.markdown(
-        f"<div style='height:{TITLE_H}px'><h3>US {commodity} Sales ({unit}) - Week Ending {pd.to_datetime(week_ending).date()}.</h3></div>",
+        f"<div style='height:{TITLE_H}px'><h3>US {commodity} Sales: {cmy_net_new_sales_fmt} {unit} - Week Ending {pd.to_datetime(week_ending).date()}.</h3></div>",
         unsafe_allow_html=True    )
     st.plotly_chart(treemap_net_sales(last_week, week_ending), use_container_width=True)
 
