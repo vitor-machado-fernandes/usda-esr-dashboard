@@ -20,7 +20,6 @@ from usda_api import get_esr_exports
 from esr_views import (
     build_last_week,
     treemap_net_sales,
-    treemap_NMY_net_sales,
     commitments_hbar,
     commitments_table,
     nmy_sales_table
@@ -303,6 +302,8 @@ st.subheader(f"Next Marketing Year Sales")
 st.write("""
 In case you are curious you can see how much next-crop cotton was sold for each country this week and in general.
 """)
+
+from esr_views import treemap_NMY_net_sales
 
 plot3_1, plot3_2 = st.columns(2, gap="small")
 

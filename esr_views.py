@@ -137,7 +137,6 @@ def treemap_NMY_net_sales(last_week: pd.DataFrame, week_ending) :
     return fig
 
 
-
 def commitments_hbar(last_week, unit_k="Thousands of Bales"):
     df = (
     last_week[["countryDescription", "accumulatedExports", "outstandingSales", "currentMYTotalCommitment"]]
