@@ -191,7 +191,7 @@ def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8, un
         ax.text(
             d["MktingWeek"].max() + 0.3,
             total.iloc[-1],
-            str(y),
+            f"{(y-1)%100:02d}/{y%100:02d}",
             color=c,
             fontsize=9,
             va="center"
