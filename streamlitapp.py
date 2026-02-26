@@ -68,6 +68,10 @@ psd_map = {
     "Soybean Oil": "4232000",   # <-- put your correct PSD code if different
 }
 
+if st.sidebar.button("Refresh ESR data"):
+    st.cache_data.clear()
+    st.rerun()
+
 # ---------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------
