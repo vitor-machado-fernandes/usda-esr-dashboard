@@ -20,8 +20,10 @@ from usda_api import get_esr_exports
 from esr_views import (
     build_last_week,
     treemap_net_sales,
+    treemap_NMY_net_sales,
     commitments_hbar,
-    commitments_table
+    commitments_table,
+    nmy_sales_table
 )
 from esr_views import seasonal_commitments_plot
 
@@ -280,11 +282,9 @@ with plot2_2:
     )
 
 
-
-
 st.subheader("Path to WASDE Exports")
 st.write("""
-Last but not least, it is helpful to know how much commodity need to be shipped per week, on average, for the WASDE's forecasted export number to be met.
+It is also helpful to know how much commodity need to be shipped per week, on average, for the WASDE's forecasted export number to be met.
 If the average of weekly shipments needed is high vs what is actually being shipped, the USDA may need to reduce the exports forecast - which will then result in higher ending stocks. 
 Also, keep in mind that before a commodity is shipped, it needs to be sold. Slow sales will likely result in reduced shipments. Do check the shipments seasonal graph (way) above too.
 """)
@@ -298,3 +298,21 @@ display_df["Avg Weekly Shipments Needed"] = display_df["Avg Weekly Shipments Nee
 st.dataframe(display_df, use_container_width=True, hide_index=True)
 
 
+st.subheader(f"Next Marketing Year Sales")
+
+st.write("""
+In case you are curious you can see how much next-crop cotton was sold for each country this week and in general.
+""")
+
+plot3_1, plot3_2 = st.columns(2, gap="small")
+
+with plot3_1:
+    st.plotly_chart(treemap_NMY_net_sales(last_week, week_ending), use_container_width=True)
+
+with plot3_2:
+    st.dataframe(
+        nmy_sales_table(last_week),
+        use_container_width=True,
+        height=190,
+        hide_index=True
+    )

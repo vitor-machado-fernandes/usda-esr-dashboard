@@ -115,6 +115,28 @@ def treemap_net_sales(last_week: pd.DataFrame, week_ending) :
     return fig
 
 
+def treemap_NMY_net_sales(last_week: pd.DataFrame, week_ending) :
+    """
+    Treemap of current MY net sales by country.
+    """
+    k = compute_kpis(last_week)
+
+    fig = px.treemap(
+        last_week,
+        path=["countryDescription"],
+        values="nextMYNetSales",
+        color="nextMYNetSales",
+        color_continuous_scale="Blues"
+    )
+
+    fig.update_traces(texttemplate="%{label}<br>%{value:,.0f}")
+    fig.update_coloraxes(showscale=False)
+    fig.update_layout(height=200, margin=dict(l=10, r=10, t=10, b=10))
+
+
+    return fig
+
+
 
 def commitments_hbar(last_week, unit_k="Thousands of Bales"):
     df = (
@@ -259,6 +281,28 @@ def commitments_table(last_week: pd.DataFrame) -> pd.DataFrame:
         "accumulatedExports": "Shipments",
         "outstandingSales": "Outstanding",
         "currentMYTotalCommitment": "Total Commitments",
+    })
+
+    return df
+
+
+def nmy_sales_table(last_week: pd.DataFrame) -> pd.DataFrame:
+    df = (
+        last_week[[
+            "countryDescription",
+            "nextMYOutstandingSales"
+        ]]
+        .dropna(subset=["countryDescription"])
+        .sort_values("nextMYOutstandingSales", ascending=False)
+    )
+
+    df[[
+        "nextMYOutstandingSales",
+    ]] /= 1_000  # thousands of bales
+
+    df = df.rename(columns={
+        "countryDescription": "Country",
+        "nextMYOutstandingSales": "Sales"
     })
 
     return df
