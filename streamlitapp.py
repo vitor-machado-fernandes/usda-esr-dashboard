@@ -68,14 +68,11 @@ psd_map = {
     "Soybean Oil": "4232000",   # <-- put your correct PSD code if different
 }
 
-if st.sidebar.button("Refresh ESR data"):
-    st.cache_data.clear()
-    st.rerun()
-
 # ---------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------
 @st.cache_data(show_spinner=True)
+@st.cache_data(ttl=60*30)  # 30 minutes (pick what you like)
 def load_esr(api_key, code, y0, y1):
     return get_esr_exports(api_key, code, y0, y1)
 
