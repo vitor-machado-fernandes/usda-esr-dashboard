@@ -58,6 +58,28 @@ def build_last_week(
     return last_week
 
 
+def _apply_month_ticks(ax, df, label_fontsize=8):
+    """
+    Set x-ticks at the first marketing-week of each calendar month,
+    based on actual weekEndingDate. Optionally add a second tick at the
+    last week (usually July) to mark end-of-MY.
+    """
+    d = df[["MktingWeek", "weekEndingDate"]].copy()
+    d["weekEndingDate"] = pd.to_datetime(d["weekEndingDate"])
+    d = d.sort_values("weekEndingDate")
+
+    # First week of each month (correct: subset must be a column name)
+    d["month"] = d["weekEndingDate"].dt.to_period("M")
+    month_start = d.drop_duplicates(subset="month", keep="first")
+
+    ticks = month_start["MktingWeek"].astype(int).tolist()
+    labels = month_start["weekEndingDate"].dt.strftime("%b").tolist()
+
+
+    ax.set_xticks(ticks)
+    ax.set_xticklabels(labels, fontsize=label_fontsize)
+
+
 
 def compute_kpis(last_week: pd.DataFrame) -> dict:
     """Aggregates headline ESR numbers."""
@@ -242,15 +264,14 @@ def seasonal_commitments_plot(df_totals, wasde_export=None, my_start_month=8, un
         mtick.FuncFormatter(lambda x, _: f"{x/1e3:,.0f}")
     )
 
-    # --- X axis as months (same logic you had, but sized to xmax) ---
-    months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-    ordered = months[my_start_month-1:] + months[:my_start_month-1]
+    # --- X axis as months: use previous MY (full year) as the tick template ---
+    cmy_year = int(cmy_df["MY"].iloc[0])          # current MY
+    tick_year = cmy_year - 1                     # previous MY (complete)
 
-    weeks = np.arange(1, xmax + 1)
-    month_labels = [ordered[min((w - 1)//4, 11)] for w in weeks]
+    tick_df = weekly.loc[weekly["MY"] == tick_year, ["MktingWeek", "weekEndingDate"]].copy()
+    _apply_month_ticks(ax, tick_df, label_fontsize=10)
 
-    ax.set_xticks(weeks[::4])
-    ax.set_xticklabels(month_labels[::4])
+    
     fig.tight_layout()
 
     return fig
@@ -358,13 +379,10 @@ def seasonal_line_plot(
     ax.set_ylabel(unit_k)
     ax.yaxis.set_major_formatter(mtick.FuncFormatter(lambda x, _: f"{x:,.0f}"))
 
-    # month labels (same logic you already use)
-    months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-    ordered = months[my_start_month-1:] + months[:my_start_month-1]
-    weeks = np.arange(1, xmax + 1)
-    month_labels = [ordered[min((w - 1)//4, 11)] for w in weeks]
-    ax.set_xticks(weeks[::4])
-    ax.set_xticklabels(month_labels[::4], fontsize=8)
+    # Use the latest year in the plot for ticks (most intuitive)
+    tick_year = plot_years[-2]
+    tick_df = weekly[weekly["MY"] == tick_year][["MktingWeek", "weekEndingDate"]].copy()
+    _apply_month_ticks(ax, tick_df, label_fontsize=8)
 
     fig.tight_layout()
     return fig
