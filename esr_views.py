@@ -115,14 +115,34 @@ def total_exports_table(last_week: pd.DataFrame) -> pd.DataFrame:
     }])
 
 
+def _prepare_treemap_data(last_week: pd.DataFrame, value_col: str) -> pd.DataFrame:
+    """
+    Clean destination labels and aggregate values so Plotly receives
+    a flat leaf-only hierarchy.
+    """
+    df = last_week[["countryDescription", value_col]].copy()
+    df["countryDescription"] = df["countryDescription"].fillna("").astype(str).str.strip()
+    df = df[df["countryDescription"] != ""]
+    df[value_col] = pd.to_numeric(df[value_col], errors="coerce")
+    df = df.dropna(subset=[value_col])
+
+    df = (
+        df.groupby("countryDescription", as_index=False)[value_col]
+        .sum()
+        .sort_values(value_col, ascending=False)
+    )
+
+    return df[df[value_col] != 0]
+
+
 def treemap_net_sales(last_week: pd.DataFrame, week_ending) :
     """
     Treemap of current MY net sales by country.
     """
-    k = compute_kpis(last_week)
+    treemap_df = _prepare_treemap_data(last_week, "currentMYNetSales")
 
     fig = px.treemap(
-        last_week,
+        treemap_df,
         path=["countryDescription"],
         values="currentMYNetSales",
         color="currentMYNetSales",
@@ -141,10 +161,10 @@ def treemap_NMY_net_sales(last_week: pd.DataFrame, week_ending) :
     """
     Treemap of current MY net sales by country.
     """
-    k = compute_kpis(last_week)
+    treemap_df = _prepare_treemap_data(last_week, "nextMYNetSales")
 
     fig = px.treemap(
-        last_week,
+        treemap_df,
         path=["countryDescription"],
         values="nextMYNetSales",
         color="nextMYNetSales",
