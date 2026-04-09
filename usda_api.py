@@ -2,6 +2,9 @@ import requests
 import pandas as pd
 
 
+EXPORTS_ID = 88
+
+
 def get_esr_exports(api_key: str, commodity_code: int, start_year: int, end_year: int) -> pd.DataFrame:
     """
     Downloads USDA ESR export data for a commodity across multiple market years
@@ -32,12 +35,6 @@ def get_esr_exports(api_key: str, commodity_code: int, start_year: int, end_year
 
     return df
 
-
-import requests
-import pandas as pd
-
-
-EXPORTS_ID = 88
 
 def get_wasde_export(api_key: str, psd_code: int, year: int) -> float:
     headers = {"X-Api-Key": api_key, "accept": "application/json"}

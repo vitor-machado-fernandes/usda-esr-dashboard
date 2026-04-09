@@ -307,9 +307,19 @@ from esr_views import (treemap_NMY_net_sales, nmy_sales_table)
 plot3_1, plot3_2 = st.columns(2, gap="small")
 
 with plot3_1:
+    nmy_net_new_sales = last_week["nextMYNetSales"].sum()
+    nmy_net_new_sales_fmt = f"{nmy_net_new_sales:,.0f}"
+    st.markdown(
+        f"<div style='height:{60}px'><h3>US {commodity} NMY Sales: {nmy_net_new_sales_fmt} {unit}</h3></div>",
+        unsafe_allow_html=True
+    )
     st.plotly_chart(treemap_NMY_net_sales(last_week, week_ending), use_container_width=True)
 
 with plot3_2:
+    st.markdown(
+        f"<div style='height:{60}px'><h3>NMY Cumulative Sales</h3></div>",
+        unsafe_allow_html=True
+    )
     st.dataframe(
         nmy_sales_table(last_week),
         use_container_width=True,
